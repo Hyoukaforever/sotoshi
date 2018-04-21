@@ -1,0 +1,2 @@
+# sotoshi
+the basic database
