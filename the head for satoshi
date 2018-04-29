@@ -1,4 +1,5 @@
 #pragma once
+#include "stdafx.h"
 #include<iostream>
 #include<map>
 #include<vector>
@@ -13,8 +14,8 @@ namespace satoshi {
 		map<string, vector<string> > table;
 		string f_name;
 	public:
-		Table();//创建表格的默认方法，可能被调用？
-		~Table();//析构方法，将执行默认写入操作
+		Table() {}//创建表格的默认方法，可能被调用？
+		~Table() { write_table(); }//析构方法，将执行默认写入操作
 		void write_table();//将table写入
 		Table(vector<string>&cols, string filename);//创建空表格，到file
 		Table(string filename);//从文件中读取表格
@@ -22,16 +23,16 @@ namespace satoshi {
 		void insert(vector<string>&vals);//向表格中插入vals
 		void insert(vector<string>&cols, vector<string>&vals);//向指定的列插入vals
 		template<typename pred>
-		void del(pred func);//将满足func的行删除
+		void del(pred func, string col_name, string stand);//将满足func的行删除
 		void del();//删除所有行
 		void update(vector<string>&cols, vector<string>&vals);//将vcols的vals更新
 		template<typename pred>
-		void update(vector<string>&cols, vector<string>&vals, pred func);//将满足func的行的cols的vals更新
-		void select(vector<string>&cols,bool distinct=false);//展示表格具体内容
-		void select(int mode=0);//展示表格全部内容
-		void sorted_select(vector<string>&cols, string judge_name, bool order = true);//有序展示表格内容
+		void update(vector<string>&cols, vector<string>&vals, pred func, string col_name, string stand);//将满足func的行的cols的vals更新
+		void select(vector<string>&cols, bool distinct = false);//展示表格具体内容
+		void select();//展示表格全部内容
+		void sorted_select(vector<string>&cols, bool order = true);//有序展示表格内容
 		template<typename pred>
-		void select(vector<string>&cols, pred func);//展示表格满足func的内容
+		void select(vector<string>&cols, pred func, string col_name, string stand);//展示表格满足func的内容
 		void select(vector<string>&cols, string filename);//将表格中的部分cols写入文件
 		void select(string filename);//将表格全部内容写入文件（重定义文件名）
 	};
@@ -39,13 +40,92 @@ namespace satoshi {
 	private:
 		map<string, Table> database;
 		map<string, int> instructors;
-		string cur_instructor
+		string cur_instructor;
 		int mode;
-		void drop_table(string);
 	public:
-		void check_instructor();//检查instructors的正确性并设置mode
+		Database();
+		bool check_instructor();//检查instructors的正确性并设置mode
 		void operation();//根据mode调用table方法，进行工作
 	};
+	template<typename pred>
+	void Table::del(pred func, string col_name, string stand) {
+		int i;
+		try {
+			table.at(col_name);
+		}
+		catch (exception) {
+			cout << "no such column" << endl;
+			return;
+		}
+		vector<int>mark;
+		for (i = 0; i < table[col_name].size(); i++) {
+			if (func(table[col_name][i], stand)) {
+				mark.push_back(i);
+			}
+		}
+		for (i = 0; i < mark.size(); i++) {
+			for (auto &x : table) {
+				x.second.erase(x.second.begin() + mark[i], x.second.begin() + mark[i] + 1);
+			}
+		}
+	}
+	template<typename pred>
+	void Table::update(vector<string>&cols, vector<string>&vals, pred func, string col_name, string stand) {
+		try {
+			table.at(col_name);
+		}
+		catch (exception) {
+			cout << "no such column" << endl;
+			return;
+		}
+		int i;
+		for (i = 0; i < table[col_name].size(); i++) {
+			if (func(table[col_name][i], stand)) {
+				break;
+			}
+		}
+		if (i >= table[col_name].size()) {
+			cout << "no corresponding name" << endl;
+			return;
+		}
+		else {
+			for (int j = 0; j < cols.size(); j++) {
+				table[cols[j]][i] = vals[j];
+			}
+		}
+	}
+	template<typename pred>
+	void Table::select(vector<string>&cols, pred func, string col_name, string stand) {
+		int i = 0;
+		try {
+			table.at(col_name);
+		}
+		catch (exception) {
+			cout << "no such column" << endl;
+			return;
+		}
+		for (; i < cols.size(); i++) {
+			try {
+				table.at(cols[i]);
+			}
+			catch (exception) {
+				cout << "no such column" << endl;
+				return;
+			}
+		}
+		vector<int> mark;
+		for (int i = 0; i < table[col_name].size(); i++) {
+			if (func(table[col_name][i], stand)) {
+				mark.push_back(i);
+			}
+		}
+		for (int i = 0; i < mark.size(); i++) {
+			for (int j = 0; j < cols.size(); j++) {
+				cout << table[cols[j]][mark[i]] << "  ";
+			}
+			cout << endl;
+		}
+	}
 }
 
 #endif // !hyouka
