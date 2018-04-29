@@ -123,6 +123,7 @@ namespace satoshi {
 		else if (mode == 4) {
 			cout << "total" << database.size()<<endl;
 			for (auto i : database) {
+				cout << i.first << ":";
 				i.second.show_table();
 			}
 		}
@@ -471,7 +472,7 @@ namespace satoshi {
 				return;
 			}
 			else {
-				if (tag == "asd") {
+				if (tag == "asc") {
 					database[temp_table_name].sorted_select(col_list,false);
 				}
 				else if (tag == "desc") {
@@ -529,7 +530,7 @@ namespace satoshi {
 				return;
 			}
 			else {
-				if (judge_ch == " ") {
+				if (judge_ch == "=") {
 					database[temp_table_name].select(col_list, [](string str1, string str2) {return str1 == str2; }, temp_col, temp_val);
 				}
 			}
@@ -594,4 +595,4 @@ namespace satoshi {
 			}
 		}
 	}
-}//这是我写过的最傻逼的程序
+}
